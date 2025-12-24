@@ -2,7 +2,10 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { Place } from "../types";
 
 // @ts-ignore
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' && process.env.API_KEY) || "";
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+if (!apiKey) {
+    console.warn("Gemini API Key is missing! Check your .env.local or EasyPanel environment variables.");
+}
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Search for places nearby using Gemini Maps Grounding

@@ -20,6 +20,14 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
 
   const clientVisits = visits.filter(v => v.clientId === client.id).sort((a,b) => b.timestamp - a.timestamp);
 
+  // Get all expenses (general + from visits)
+  const allExpenses = [
+      ...client.expenses,
+      ...clientVisits.flatMap(v => (v.expensesAdded || []).map(e => ({ ...e, visitDate: v.timestamp })))
+  ].sort((a, b) => b.date - a.date);
+
+  const totalExpenses = allExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+
   // Get all documents (general + from visits)
   const allDocuments = [
       ...client.documents,
@@ -218,18 +226,24 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
           
           {activeTab === 'overview' && (
               <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
-                          <div className="flex items-center gap-2 text-app-muted mb-2 text-xs uppercase tracking-wider">
-                              <Clock size={14} /> Tiempo Total
+                  <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-app-surface p-3 rounded-xl border border-app-accent/10">
+                          <div className="flex items-center gap-1 text-app-muted mb-1 text-[10px] uppercase tracking-wider">
+                              <Clock size={12} /> Tiempo
                           </div>
-                          <span className="text-2xl font-bold text-white">{client.totalTimeSpentMinutes} <span className="text-sm font-normal text-app-muted">min</span></span>
+                          <span className="text-lg font-bold text-white">{client.totalTimeSpentMinutes} <span className="text-[10px] font-normal text-app-muted">min</span></span>
                       </div>
-                      <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
-                          <div className="flex items-center gap-2 text-app-muted mb-2 text-xs uppercase tracking-wider">
-                              <Calendar size={14} /> Visitas
+                      <div className="bg-app-surface p-3 rounded-xl border border-app-accent/10">
+                          <div className="flex items-center gap-1 text-app-muted mb-1 text-[10px] uppercase tracking-wider">
+                              <Calendar size={12} /> Visitas
                           </div>
-                          <span className="text-2xl font-bold text-white">{client.visitIds.length}</span>
+                          <span className="text-lg font-bold text-white">{client.visitIds.length}</span>
+                      </div>
+                      <div className="bg-app-surface p-3 rounded-xl border border-app-accent/10">
+                          <div className="flex items-center gap-1 text-app-muted mb-1 text-[10px] uppercase tracking-wider">
+                              <DollarSign size={12} /> Coste
+                          </div>
+                          <span className="text-lg font-bold text-white">{totalExpenses.toFixed(2)}€</span>
                       </div>
                   </div>
 
@@ -348,13 +362,17 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                   {/* Expenses */}
                                   {visit.expensesAdded && visit.expensesAdded.length > 0 && (
                                       <div>
-                                          <p className="text-xs font-bold text-app-accent uppercase mb-1">Gastos</p>
+                                          <p className="text-xs font-bold text-app-accent uppercase mb-1">Gastos de la Visita</p>
                                           {visit.expensesAdded.map(e => (
                                               <div key={e.id} className="text-sm text-white flex justify-between py-1 border-b border-white/5 last:border-0">
                                                   <span>{e.concept}</span>
-                                                  <span className="font-bold">{e.amount}€</span>
+                                                  <span className="font-bold text-red-400">{e.amount}€</span>
                                               </div>
                                           ))}
+                                          <div className="flex justify-between pt-1 border-t border-app-accent/20 mt-1">
+                                              <span className="text-xs font-bold text-app-accent">Total Visita</span>
+                                              <span className="text-xs font-bold text-app-accent">{visit.expensesAdded.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}€</span>
+                                          </div>
                                       </div>
                                   )}
                               </div>
@@ -406,12 +424,15 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                    <div className="bg-gradient-to-r from-app-surface to-app-bg border border-app-accent/20 rounded-xl p-4 flex justify-between items-center">
                        <span className="text-app-muted text-sm">Total Gastos</span>
                        <span className="text-2xl font-bold text-white">
-                           {client.expenses.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}€
+                           {totalExpenses.toFixed(2)}€
                        </span>
                    </div>
 
                    <div className="space-y-2">
-                      {client.expenses.map(exp => (
+                      {allExpenses.length === 0 && (
+                          <p className="text-center text-app-muted py-10">No hay gastos registrados.</p>
+                      )}
+                      {allExpenses.map(exp => (
                           <div key={exp.id} className="bg-app-surface p-3 rounded-lg flex justify-between items-center">
                               <div className="flex items-center gap-3">
                                   <div className="bg-red-900/30 p-2 rounded-full text-red-400">
@@ -419,7 +440,10 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                   </div>
                                   <div>
                                       <p className="text-white font-medium text-sm">{exp.concept}</p>
-                                      <p className="text-[10px] text-app-muted">{new Date(exp.date).toLocaleDateString()}</p>
+                                      <p className="text-[10px] text-app-muted">
+                                          {new Date(exp.date).toLocaleDateString()}
+                                          {exp.visitDate && ` (Visita)`}
+                                      </p>
                                   </div>
                               </div>
                               <span className="font-bold text-white">{exp.amount}€</span>

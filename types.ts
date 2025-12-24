@@ -22,6 +22,7 @@ export interface Expense {
   amount: number;
   concept: string;
   date: number;
+  visitDate?: number; // Optional: to track which visit it belongs to
 }
 
 export interface ClientDoc {

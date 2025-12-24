@@ -6,7 +6,7 @@ import Login from './components/Login';
 import ExploreMap from './components/ExploreMap';
 import VisitForm from './components/VisitForm';
 import ClientFolder from './components/ClientFolder';
-import { AppView, VisitReport, Place, Client, User } from './types';
+import { AppView, VisitReport, Place, Client, User, Contact } from './types';
 import { Loader2, Folder, Search, UserPlus, Users } from 'lucide-react';
 import { api } from './services/api';
 
@@ -97,6 +97,18 @@ const App: React.FC = () => {
       let client = clients.find(c => c.id === report.clientId) || clients.find(c => c.name === report.placeName);
       let savedClient: Client;
 
+      // Prepare contact if data provided
+      const newContactsFromVisit: Contact[] = [];
+      if (updatedClientData?.contactName && (updatedClientData.phones?.length || updatedClientData.emails?.length)) {
+          newContactsFromVisit.push({
+              id: crypto.randomUUID(),
+              name: updatedClientData.contactName,
+              role: 'Contacto Principal',
+              phone: updatedClientData.phones?.[0] || '',
+              email: updatedClientData.emails?.[0] || ''
+          });
+      }
+
       if (client) {
           // Update existing client
           const updatedClient: Client = {
@@ -104,7 +116,7 @@ const App: React.FC = () => {
               ...updatedClientData,
               phones: [...(client.phones || []), ...(updatedClientData?.phones || [])].filter((v,i,a) => a.indexOf(v)===i),
               emails: [...(client.emails || []), ...(updatedClientData?.emails || [])].filter((v,i,a) => a.indexOf(v)===i),
-              
+              contacts: [...(client.contacts || []), ...newContactsFromVisit],
               visitIds: [...client.visitIds, report.id],
               totalTimeSpentMinutes: client.totalTimeSpentMinutes + report.durationMinutes,
           };
@@ -125,6 +137,7 @@ const App: React.FC = () => {
               contactName: updatedClientData?.contactName || '',
               phones: updatedClientData?.phones || [],
               emails: updatedClientData?.emails || [],
+              contacts: newContactsFromVisit,
               totalTimeSpentMinutes: report.durationMinutes,
               expenses: [],
               documents: [],
