@@ -18,7 +18,7 @@ connectDB().then(async () => {
     if (!admin) {
       await User.create({
         username: 'admin',
-        password: 'adminpassword', // Default password
+        password: 'admin', // Default password
         role: 'admin',
         name: 'Admin User'
       });

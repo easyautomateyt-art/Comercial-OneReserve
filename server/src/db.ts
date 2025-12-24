@@ -5,8 +5,8 @@ dotenv.config();
 
 const DB_NAME = process.env.DB_NAME || 'app_comercial';
 const DB_USER = process.env.DB_USER || 'admin';
-const DB_PASS = process.env.DB_PASS || 'g2005607';
-const DB_HOST = process.env.DB_HOST || 'app_reservas_app_comercial';
+const DB_PASS = process.env.DB_PASS || 'app_comercial';
+const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = parseInt(process.env.DB_PORT || '3306');
 
 export const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
