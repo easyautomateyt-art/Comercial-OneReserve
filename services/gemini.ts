@@ -9,7 +9,7 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Use a more stable model identifier
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL_NAME = "gemini-2.5-flash";
 
 // Search for places nearby using Gemini Maps Grounding
 export const searchNearbyPlaces = async (
