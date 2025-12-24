@@ -105,7 +105,6 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
           reader.readAsDataURL(file);
       }
   };
-  };
   const removeDocument = (id: string) => setDocuments(documents.filter(d => d.id !== id));
 
   const removeVoiceNote = (id: string) => setVoiceNotes(voiceNotes.filter(v => v.id !== id));
@@ -351,9 +350,15 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
 
         {/* Documents & Audio */}
         <div className="space-y-2 bg-app-surface/50 p-4 rounded-xl border border-dashed border-app-muted/30">
-            <label className="text-xs font-bold text-app-accent uppercase tracking-wider flex items-center gap-1">
-                <Upload size={12}/> Archivos & Notas de Voz
-            </label>
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-app-accent uppercase tracking-wider flex items-center gap-1">
+                    <Upload size={12}/> Archivos & Notas de Voz
+                </label>
+                <label className="bg-app-accent/10 text-app-accent px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer flex items-center gap-1">
+                    <Plus size={12} /> Adjuntar Doc
+                    <input type="file" className="hidden" onChange={addDocument} />
+                </label>
+            </div>
             
             {/* Audio Recorder */}
             <div className="flex items-center gap-4 py-2 border-b border-app-accent/10 mb-2">
@@ -378,9 +383,6 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
                     </div>
                 ))}
 
-                <button type="button" onClick={addDocument} className="text-xs bg-app-accent text-app-bg px-2 py-1 rounded font-bold hover:bg-white transition-colors w-full mt-2">
-                    + Adjuntar Foto / Doc
-                </button>
                 {documents.map(doc => (
                      <div key={doc.id} className="flex justify-between items-center p-2 bg-app-bg rounded border border-app-accent/10">
                         <span className="text-sm text-white flex items-center gap-2"><FileText size={14} className="text-app-accent"/> {doc.name}</span>
@@ -418,33 +420,6 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
                         </div>
                     ))}
                 </div>
-            )}
-        </div>
-
-        {/* === SECTION 5: DOCUMENTS === */}
-        <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10 space-y-3">
-            <div className="flex justify-between items-center">
-                <label className="text-xs font-bold text-app-muted uppercase tracking-wider flex items-center gap-2">
-                    <FileText size={14} /> Documentos
-                </label>
-                <label className="bg-app-accent/10 text-app-accent px-3 py-1 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1">
-                    <Upload size={14} /> Subir
-                    <input type="file" className="hidden" onChange={addDocument} />
-                </label>
-            </div>
-            
-            {documents.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                    {documents.map(doc => (
-                        <div key={doc.id} className="bg-app-bg p-2 rounded flex items-center gap-2 overflow-hidden">
-                            <FileText size={16} className="text-app-muted flex-shrink-0" />
-                            <span className="text-xs text-white truncate">{doc.name}</span>
-                            <button type="button" onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))} className="ml-auto text-red-400"><X size={14}/></button>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-xs text-app-muted italic text-center py-2">Sin documentos adjuntos</p>
             )}
         </div>
 
