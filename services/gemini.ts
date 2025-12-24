@@ -28,7 +28,7 @@ export const searchNearbyPlaces = async (
       tools: [
         {
           // @ts-ignore
-          googleSearch: {},
+          google_search: {},
         },
       ] as any,
     });
@@ -115,7 +115,7 @@ export const getCoordinatesForAddress = async (address: string): Promise<{lat: n
              contents: [{ role: "user", parts: [{ text: `Find the exact geographic coordinates (latitude and longitude) for this specific address: "${address}".` }] }],
              tools: [{ 
                  // @ts-ignore
-                 googleSearch: {} 
+                 google_search: {} 
              } as any]
         });
 

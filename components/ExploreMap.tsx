@@ -108,6 +108,7 @@ const ExploreMap: React.FC<ExploreMapProps> = ({ onCheckIn, onOpenClient, client
     searchResults.forEach(place => {
         // Skip if this place is already a client (simple check by name)
         if (clients.some(c => c.name === place.name)) return;
+        if (!place.location || typeof place.location.lat !== 'number') return;
 
         const icon = L.divIcon({
             className: 'search-marker',
@@ -178,9 +179,12 @@ const ExploreMap: React.FC<ExploreMapProps> = ({ onCheckIn, onOpenClient, client
         console.log(`[ExploreMap] Found ${results.length} results`);
         setSearchResults(results);
         
-        if (results.length > 0 && mapRef.current) {
-            const group = new window.L.featureGroup(results.map((r: any) => window.L.marker([r.location.lat, r.location.lng])));
-            mapRef.current.fitBounds(group.getBounds().pad(0.2));
+        if (results.length > 0 && mapRef.current && window.L) {
+            const validResults = results.filter(r => r.location && typeof r.location.lat === 'number');
+            if (validResults.length > 0) {
+                const group = new window.L.featureGroup(validResults.map((r: any) => window.L.marker([r.location.lat, r.location.lng])));
+                mapRef.current.fitBounds(group.getBounds().pad(0.2));
+            }
         }
     } catch (err) {
         console.error("[ExploreMap] Search error:", err);
