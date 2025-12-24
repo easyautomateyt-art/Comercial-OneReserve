@@ -71,8 +71,10 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+      localStorage.removeItem('one_reserve_user');
       setCurrentUser(null);
       setCurrentView(AppView.LOGIN);
+      window.location.reload(); // Force clean state
   };
 
   const handleSaveVisit = async (report: VisitReport, updatedClientData?: Partial<Client>) => {

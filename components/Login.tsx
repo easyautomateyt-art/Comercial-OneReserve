@@ -80,6 +80,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             >
               {loading ? <Loader2 className="animate-spin" /> : 'Acceder'}
             </button>
+            
+            <button 
+              type="button"
+              onClick={() => onLogin({ id: 'demo', username: 'demo', name: 'Usuario Demo', role: 'commercial', password: '' })}
+              className="w-full bg-app-surface border border-app-accent/30 text-app-muted hover:text-white hover:border-app-accent font-bold py-3 rounded-xl transition-all text-sm"
+            >
+              Entrar en Modo Demo (Offline)
+            </button>
           </div>
         </form>
       </div>

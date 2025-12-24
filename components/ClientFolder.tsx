@@ -49,6 +49,13 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
     }
   };
 
+  const openDocument = (data: string) => {
+      const newWindow = window.open();
+      if (newWindow) {
+          newWindow.document.write(`<iframe src="${data}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      }
+  };
+
   return (
     <div className="h-full flex flex-col animate-fade-in overflow-y-auto">
       {/* Header */}
@@ -71,9 +78,9 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
         {/* Contact Info Chips */}
         <div className="flex flex-wrap gap-2">
             {client.contactName && (
-                <div className="flex items-center gap-1 bg-app-bg/50 px-3 py-1.5 rounded-full border border-app-accent/10">
+                <button onClick={() => setActiveTab('contacts')} className="flex items-center gap-1 bg-app-bg/50 px-3 py-1.5 rounded-full border border-app-accent/10 hover:border-app-accent hover:text-app-accent transition-all cursor-pointer">
                     <User size={12} className="text-app-accent"/> <span className="text-xs text-white">{client.contactName}</span>
-                </div>
+                </button>
             )}
             {client.phones.map((p, i) => (
                 <a key={i} href={`tel:${p}`} className="flex items-center gap-1 bg-app-bg/50 px-3 py-1.5 rounded-full border border-app-accent/10 hover:border-app-accent/50 transition-colors">
@@ -276,9 +283,13 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                       <div>
                                           <p className="text-xs font-bold text-app-accent uppercase mb-1">Documentos Adjuntos</p>
                                           {visit.documentsAdded.map(d => (
-                                              <div key={d.id} className="text-sm text-white flex items-center gap-2 py-1">
+                                              <button 
+                                                key={d.id} 
+                                                onClick={() => d.data && openDocument(d.data)}
+                                                className="text-sm text-white flex items-center gap-2 py-1 hover:text-app-accent w-full text-left"
+                                              >
                                                   <FileText size={14}/> {d.name}
-                                              </div>
+                                              </button>
                                           ))}
                                       </div>
                                   )}
@@ -314,7 +325,11 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
 
                   <div className="space-y-2">
                       {client.documents.map(doc => (
-                          <div key={doc.id} className="bg-app-surface p-3 rounded-lg flex items-center justify-between border-l-2 border-l-app-accent">
+                          <button 
+                            key={doc.id} 
+                            onClick={() => doc.data && openDocument(doc.data)}
+                            className="bg-app-surface p-3 rounded-lg flex items-center justify-between border-l-2 border-l-app-accent w-full hover:bg-app-surface/80 transition-colors text-left"
+                          >
                               <div className="flex items-center gap-3">
                                   <FileText className="text-app-accent" size={20} />
                                   <div>
@@ -323,7 +338,7 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                   </div>
                               </div>
                               <span className="text-xs bg-app-bg px-2 py-1 rounded text-app-muted uppercase">{doc.type}</span>
-                          </div>
+                          </button>
                       ))}
                   </div>
               </div>
