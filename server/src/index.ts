@@ -18,7 +18,7 @@ connectDB().then(async () => {
     if (!admin) {
       await User.create({
         username: 'admin',
-        password: 'admin', // Default password
+        password: 'adminpassword', // Match user's DB
         role: 'admin',
         name: 'Admin User'
       });
@@ -29,7 +29,7 @@ connectDB().then(async () => {
     if (!commercial) {
       await User.create({
         username: 'comercial',
-        password: 'password',
+        password: 'password', // Match user's DB
         role: 'commercial',
         name: 'Comercial User'
       });

@@ -18,6 +18,7 @@ export const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
 
 export const connectDB = async () => {
   try {
+    console.log(`Attempting to connect to database ${DB_NAME} at ${DB_HOST}:${DB_PORT} as ${DB_USER}...`);
     await sequelize.authenticate();
     console.log('Database connection established successfully.');
     // Sync models
