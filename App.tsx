@@ -29,6 +29,14 @@ const App: React.FC = () => {
   // Load data
   useEffect(() => {
     const loadData = async () => {
+      if (currentUser?.id === 'demo') {
+        const savedClients = localStorage.getItem('demo_clients');
+        const savedVisits = localStorage.getItem('demo_visits');
+        if (savedClients) setClients(JSON.parse(savedClients));
+        if (savedVisits) setVisits(JSON.parse(savedVisits));
+        return;
+      }
+
       try {
         const [fetchedClients, fetchedVisits] = await Promise.all([
           api.getClients(),
@@ -61,9 +69,15 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
-      if(currentUser) localStorage.setItem('one_reserve_user', JSON.stringify(currentUser));
+      if(currentUser) {
+          localStorage.setItem('one_reserve_user', JSON.stringify(currentUser));
+          if (currentUser.id === 'demo') {
+              localStorage.setItem('demo_clients', JSON.stringify(clients));
+              localStorage.setItem('demo_visits', JSON.stringify(visits));
+          }
+      }
       else localStorage.removeItem('one_reserve_user');
-  }, [currentUser]);
+  }, [currentUser, clients, visits]);
 
   const handleLogin = (user: User) => {
       setCurrentUser(user);
@@ -94,7 +108,12 @@ const App: React.FC = () => {
               visitIds: [...client.visitIds, report.id],
               totalTimeSpentMinutes: client.totalTimeSpentMinutes + report.durationMinutes,
           };
-          savedClient = await api.updateClient(updatedClient);
+          
+          if (currentUser?.id === 'demo') {
+              savedClient = updatedClient;
+          } else {
+              savedClient = await api.updateClient(updatedClient);
+          }
           setClients(prev => prev.map(c => c.id === savedClient.id ? savedClient : c));
       } else {
           // Create new client
@@ -111,14 +130,24 @@ const App: React.FC = () => {
               documents: [],
               visitIds: [report.id]
           };
-          savedClient = await api.createClient(newClient);
+          
+          if (currentUser?.id === 'demo') {
+              savedClient = newClient;
+          } else {
+              savedClient = await api.createClient(newClient);
+          }
           setClients(prev => [savedClient, ...prev]);
       }
 
       // 2. Save Visit
       const visitToSave = { ...report, clientId: savedClient.id };
-      const savedVisit = await api.createVisit(visitToSave);
-      setVisits(prev => [savedVisit, ...prev]);
+      
+      if (currentUser?.id === 'demo') {
+          setVisits(prev => [visitToSave, ...prev]);
+      } else {
+          const savedVisit = await api.createVisit(visitToSave);
+          setVisits(prev => [savedVisit, ...prev]);
+      }
 
       // Reset states
       setCurrentView(AppView.DASHBOARD);
@@ -324,6 +353,7 @@ const App: React.FC = () => {
             onBack={() => setCurrentView(AppView.CLIENTS)} 
             onUpdateClient={updateClient}
             onNewVisit={handleNewVisitForClient}
+            isDemo={currentUser?.id === 'demo'}
           />
       )}
 

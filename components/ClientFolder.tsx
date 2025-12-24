@@ -9,9 +9,10 @@ interface ClientFolderProps {
   onBack: () => void;
   onUpdateClient: (updatedClient: Client) => void;
   onNewVisit: (client: Client) => void;
+  isDemo?: boolean;
 }
 
-const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack, onUpdateClient, onNewVisit }) => {
+const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack, onUpdateClient, onNewVisit, isDemo }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'docs' | 'expenses' | 'contacts'>('overview');
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [showAddContact, setShowAddContact] = useState(false);
@@ -37,7 +38,13 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const addedContact = await api.addContact(client.id, newContact);
+      let addedContact: Contact;
+      if (isDemo) {
+          addedContact = { ...newContact, id: crypto.randomUUID() };
+      } else {
+          addedContact = await api.addContact(client.id, newContact);
+      }
+      
       onUpdateClient({
         ...client,
         contacts: [...(client.contacts || []), addedContact]

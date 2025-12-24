@@ -83,7 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             
             <button 
               type="button"
-              onClick={() => onLogin({ id: 'demo', username: 'demo', name: 'Usuario Demo', role: 'commercial', password: '' })}
+              onClick={() => onLogin({ id: 'demo', username: 'demo', name: 'Usuario Demo', role: 'commercial' })}
               className="w-full bg-app-surface border border-app-accent/30 text-app-muted hover:text-white hover:border-app-accent font-bold py-3 rounded-xl transition-all text-sm"
             >
               Entrar en Modo Demo (Offline)
