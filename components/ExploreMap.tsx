@@ -166,20 +166,26 @@ const ExploreMap: React.FC<ExploreMapProps> = ({ onCheckIn, onOpenClient, client
   const handleSearch = async (overrideQuery?: string) => {
     const q = overrideQuery || query;
     if (!location || !q) return;
+    console.log(`[ExploreMap] Searching for: ${q} at ${location.lat}, ${location.lng}`);
     setLoading(true);
     setQuery(q);
     
     // Clear previous results to show loading state implies refreshing
     setSearchResults([]);
     
-    const results = await searchNearbyPlaces(q, location.lat, location.lng);
-    
-    setSearchResults(results);
-    setLoading(false);
-    
-    if (results.length > 0 && mapRef.current) {
-        const group = new window.L.featureGroup(results.map((r: any) => window.L.marker([r.location.lat, r.location.lng])));
-        mapRef.current.fitBounds(group.getBounds().pad(0.2));
+    try {
+        const results = await searchNearbyPlaces(q, location.lat, location.lng);
+        console.log(`[ExploreMap] Found ${results.length} results`);
+        setSearchResults(results);
+        
+        if (results.length > 0 && mapRef.current) {
+            const group = new window.L.featureGroup(results.map((r: any) => window.L.marker([r.location.lat, r.location.lng])));
+            mapRef.current.fitBounds(group.getBounds().pad(0.2));
+        }
+    } catch (err) {
+        console.error("[ExploreMap] Search error:", err);
+    } finally {
+        setLoading(false);
     }
   };
 

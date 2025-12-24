@@ -8,14 +8,18 @@ if (!apiKey) {
 }
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// Use a more stable model identifier
+const MODEL_NAME = "gemini-2.5-flash";
+
 // Search for places nearby using Gemini Maps Grounding
 export const searchNearbyPlaces = async (
   query: string,
   lat: number,
   lng: number
 ): Promise<Place[]> => {
+  console.log(`[Gemini] Searching for "${query}" near ${lat}, ${lng}`);
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME }); 
     
     // Explicitly ask for specific fields to ensure we get addresses
     const result = await model.generateContent({
@@ -24,20 +28,16 @@ export const searchNearbyPlaces = async (
       tools: [
         {
           // @ts-ignore
-          googleSearchRetrieval: {
-            dynamicRetrievalConfig: {
-              mode: "MODE_DYNAMIC",
-              dynamicThreshold: 0.3,
-            },
-          },
+          googleSearch: {},
         },
       ] as any,
     });
 
     const text = result.response.text();
+    console.log("[Gemini] Raw response received:", text.substring(0, 100) + "...");
 
     const secondPassModel = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: MODEL_NAME,
         generationConfig: {
             responseMimeType: "application/json",
             responseSchema: {
@@ -61,6 +61,7 @@ export const searchNearbyPlaces = async (
         Search Context: ${text}`);
 
     const parsed = JSON.parse(secondPassResult.response.text() || "[]");
+    console.log(`[Gemini] Successfully extracted ${parsed.length} places.`);
     return parsed.map((p: any, i: number) => ({
         id: `place-${Date.now()}-${i}`,
         name: p.name,
@@ -73,15 +74,16 @@ export const searchNearbyPlaces = async (
     }));
 
   } catch (error) {
-    console.error("Error searching places:", error);
+    console.error("[Gemini] Error searching places:", error);
     return [];
   }
 };
 
 export const getAddressSuggestions = async (input: string, lat: number, lng: number): Promise<string[]> => {
+    console.log(`[Gemini] Getting address suggestions for "${input}"`);
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: MODEL_NAME,
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -97,26 +99,28 @@ export const getAddressSuggestions = async (input: string, lat: number, lng: num
             Include street names and numbers.
             Return ONLY a JSON array of strings.`);
 
-        return JSON.parse(result.response.text() || "[]");
+        const suggestions = JSON.parse(result.response.text() || "[]");
+        console.log(`[Gemini] Found ${suggestions.length} suggestions.`);
+        return suggestions;
     } catch (e) {
-        console.error("Address suggestion error", e);
+        console.error("[Gemini] Address suggestion error", e);
         return [];
     }
 }
 
 export const getCoordinatesForAddress = async (address: string): Promise<{lat: number, lng: number} | null> => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
         const result = await model.generateContent({
              contents: [{ role: "user", parts: [{ text: `Find the exact geographic coordinates (latitude and longitude) for this specific address: "${address}".` }] }],
              tools: [{ 
                  // @ts-ignore
-                 googleSearchRetrieval: {} 
+                 googleSearch: {} 
              } as any]
         });
 
         const extractionModel = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: MODEL_NAME,
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -147,7 +151,7 @@ export const getCoordinatesForAddress = async (address: string): Promise<{lat: n
 
 export const analyzeSentiment = async (feedback: string): Promise<'positive' | 'neutral' | 'negative'> => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
         const result = await model.generateContent(`Analyze the sentiment of this sales visit feedback. Return ONLY one word: "positive", "neutral", or "negative".
             
             Feedback: "${feedback}"`);

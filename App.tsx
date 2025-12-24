@@ -7,7 +7,7 @@ import ExploreMap from './components/ExploreMap';
 import VisitForm from './components/VisitForm';
 import ClientFolder from './components/ClientFolder';
 import { AppView, VisitReport, Place, Client, User, Contact } from './types';
-import { Loader2, Folder, Search, UserPlus, Users } from 'lucide-react';
+import { Loader2, Folder, Search, UserPlus, Users, DollarSign } from 'lucide-react';
 import { api } from './services/api';
 
 const App: React.FC = () => {
@@ -371,28 +371,51 @@ const App: React.FC = () => {
       )}
 
       {currentView === AppView.HISTORY && (
-        <div className="p-6">
+        <div className="p-6 pb-24">
             <h2 className="text-xl font-bold text-white mb-6">Historial Completo</h2>
             <div className="space-y-4">
                 {visits.map(v => (
                      <div 
                         key={v.id} 
-                        onClick={() => handleViewVisitDetails(v)}
-                        className="bg-app-surface p-4 rounded-xl border border-app-accent/10 cursor-pointer hover:bg-app-surface/80 transition-colors"
+                        className="bg-app-surface rounded-xl border border-app-accent/10 overflow-hidden"
                      >
-                        <div className="flex justify-between">
-                            <h3 className="font-bold text-white">{v.placeName}</h3>
-                            <span className="text-xs text-app-muted">{new Date(v.timestamp).toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-app-text mt-2 text-sm line-clamp-2">{v.feedback}</p>
-                        <div className="mt-2 flex gap-2">
-                            <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
-                                v.status === 'aceptado' ? 'bg-green-900/50 text-green-400' :
-                                v.status === 'rechazado' ? 'bg-red-900/50 text-red-400' :
-                                'bg-yellow-900/50 text-yellow-400'
-                            }`}>
-                                {v.status}
-                            </span>
+                        <div 
+                            onClick={() => handleViewVisitDetails(v)}
+                            className="p-4 cursor-pointer hover:bg-app-surface/80 transition-colors"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-bold text-white">{v.placeName}</h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-[10px] text-app-muted">{new Date(v.timestamp).toLocaleDateString()}</span>
+                                        {v.expensesAdded && v.expensesAdded.length > 0 && (
+                                            <span className="text-[10px] bg-red-900/30 text-red-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                <DollarSign size={10} /> {v.expensesAdded.reduce((acc, curr) => acc + curr.amount, 0).toFixed(0)}€
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
+                                    v.status === 'aceptado' ? 'bg-green-900/50 text-green-400' :
+                                    v.status === 'rechazado' ? 'bg-red-900/50 text-red-400' :
+                                    'bg-yellow-900/50 text-yellow-400'
+                                }`}>
+                                    {v.status}
+                                </span>
+                            </div>
+                            <p className="text-app-text mt-2 text-sm line-clamp-2">{v.feedback}</p>
+                            
+                            {/* Expense Breakdown in General History */}
+                            {v.expensesAdded && v.expensesAdded.length > 0 && (
+                                <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
+                                    {v.expensesAdded.map(e => (
+                                        <div key={e.id} className="flex justify-between text-[11px]">
+                                            <span className="text-app-muted">{e.concept}</span>
+                                            <span className="text-white font-medium">{e.amount}€</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                      </div>
                 ))}

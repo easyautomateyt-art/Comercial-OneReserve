@@ -247,6 +247,26 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                       </div>
                   </div>
 
+                  {allExpenses.length > 0 && (
+                      <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
+                          <h3 className="font-bold text-white mb-3 flex justify-between items-center">
+                              <span>Desglose de Gastos</span>
+                              <button onClick={() => setActiveTab('expenses')} className="text-app-accent text-xs font-normal">Ver todos</button>
+                          </h3>
+                          <div className="space-y-2">
+                              {allExpenses.slice(0, 3).map(exp => (
+                                  <div key={exp.id} className="flex justify-between items-center text-xs">
+                                      <div className="flex flex-col">
+                                          <span className="text-white font-medium">{exp.concept}</span>
+                                          <span className="text-[10px] text-app-muted">{new Date(exp.date).toLocaleDateString()}</span>
+                                      </div>
+                                      <span className="font-bold text-red-400">{exp.amount}€</span>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  )}
+
                   <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
                       <h3 className="font-bold text-white mb-3 flex justify-between items-center">
                           <span>Historial de Visitas</span>
@@ -312,6 +332,11 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                   <div className="flex items-center gap-2 mb-1">
                                       <span className="font-bold text-white text-sm">{new Date(visit.timestamp).toLocaleDateString()}</span>
                                       <span className="text-xs text-app-muted">{new Date(visit.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                      {visit.expensesAdded && visit.expensesAdded.length > 0 && (
+                                          <span className="text-[10px] bg-red-900/30 text-red-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                              <DollarSign size={10} /> {visit.expensesAdded.reduce((acc, curr) => acc + curr.amount, 0).toFixed(0)}€
+                                          </span>
+                                      )}
                                   </div>
                                   <p className="text-sm text-gray-300 line-clamp-2">{visit.feedback}</p>
                               </div>
@@ -361,14 +386,16 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
 
                                   {/* Expenses */}
                                   {visit.expensesAdded && visit.expensesAdded.length > 0 && (
-                                      <div>
+                                      <div className="mt-2">
                                           <p className="text-xs font-bold text-app-accent uppercase mb-1">Gastos de la Visita</p>
-                                          {visit.expensesAdded.map(e => (
-                                              <div key={e.id} className="text-sm text-white flex justify-between py-1 border-b border-white/5 last:border-0">
-                                                  <span>{e.concept}</span>
-                                                  <span className="font-bold text-red-400">{e.amount}€</span>
-                                              </div>
-                                          ))}
+                                          <div className="space-y-1">
+                                              {visit.expensesAdded.map(e => (
+                                                  <div key={e.id} className="text-sm text-white flex justify-between py-1 border-b border-white/5 last:border-0">
+                                                      <span>{e.concept}</span>
+                                                      <span className="font-bold text-red-400">{e.amount}€</span>
+                                                  </div>
+                                              ))}
+                                          </div>
                                           <div className="flex justify-between pt-1 border-t border-app-accent/20 mt-1">
                                               <span className="text-xs font-bold text-app-accent">Total Visita</span>
                                               <span className="text-xs font-bold text-app-accent">{visit.expensesAdded.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}€</span>

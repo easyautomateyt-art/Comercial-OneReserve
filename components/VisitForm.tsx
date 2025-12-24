@@ -52,11 +52,18 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
 
   const handleAddressSearch = async () => {
       if (!address || !userLocation) return;
+      console.log(`[VisitForm] Requesting suggestions for: ${address}`);
       setLoadingSuggestions(true);
       setShowSuggestions(true);
-      const results = await getAddressSuggestions(address, userLocation.lat, userLocation.lng);
-      setSuggestions(results);
-      setLoadingSuggestions(false);
+      try {
+          const results = await getAddressSuggestions(address, userLocation.lat, userLocation.lng);
+          console.log(`[VisitForm] Suggestions received:`, results);
+          setSuggestions(results);
+      } catch (err) {
+          console.error("[VisitForm] Suggestion error:", err);
+      } finally {
+          setLoadingSuggestions(false);
+      }
   };
 
   const selectSuggestion = (selected: string) => {
