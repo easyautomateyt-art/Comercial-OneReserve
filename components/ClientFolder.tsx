@@ -20,6 +20,12 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
 
   const clientVisits = visits.filter(v => v.clientId === client.id).sort((a,b) => b.timestamp - a.timestamp);
 
+  // Get all documents (general + from visits)
+  const allDocuments = [
+      ...client.documents,
+      ...clientVisits.flatMap(v => (v.documentsAdded || []).map(d => ({ ...d, visitDate: v.timestamp })))
+  ].sort((a, b) => b.date - a.date);
+
   const handleAddDoc = () => {
       const docTypes = ['Factura', 'Catálogo', 'Contrato', 'Presupuesto'];
       const randomType = docTypes[Math.floor(Math.random() * docTypes.length)];
@@ -121,7 +127,7 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 p-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-4 ${activeTab === tab ? 'border-app-accent text-app-accent' : 'border-transparent text-app-muted'}`}
             >
-                {tab === 'overview' ? 'Resumen' : tab === 'history' ? 'Historial' : tab === 'docs' ? 'Docs' : tab === 'expenses' ? 'Gastos' : 'Contactos'}
+                {tab === 'overview' ? 'Resumen' : tab === 'history' ? 'Historial' : tab === 'docs' ? 'Documentos' : tab === 'expenses' ? 'Gastos' : 'Contactos'}
             </button>
           ))}
       </div>
@@ -228,15 +234,53 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                   </div>
 
                   <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
-                      <h3 className="font-bold text-white mb-3">Última Actividad</h3>
-                      {clientVisits.length > 0 ? (
-                           <p className="text-app-muted text-sm italic">
-                            Visita el {new Date(clientVisits[0].timestamp).toLocaleDateString()} - <span className="text-app-accent">{clientVisits[0].status}</span>
-                           </p>
-                      ) : (
-                          <p className="text-app-muted text-sm italic">Sin actividad reciente.</p>
-                      )}
+                      <h3 className="font-bold text-white mb-3 flex justify-between items-center">
+                          <span>Historial de Visitas</span>
+                          <button onClick={() => setActiveTab('history')} className="text-app-accent text-xs font-normal">Ver todo</button>
+                      </h3>
+                      <div className="space-y-3">
+                        {clientVisits.length > 0 ? (
+                            clientVisits.slice(0, 3).map(visit => (
+                                <div key={visit.id} className="border-l-2 border-app-accent/30 pl-3 py-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-bold text-white">{new Date(visit.timestamp).toLocaleDateString()}</span>
+                                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                                            visit.status === 'aceptado' ? 'bg-green-900/50 text-green-400' :
+                                            visit.status === 'rechazado' ? 'bg-red-900/50 text-red-400' :
+                                            'bg-yellow-900/50 text-yellow-400'
+                                        }`}>
+                                            {visit.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-app-muted line-clamp-1">{visit.feedback}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-app-muted text-sm italic">Sin actividad reciente.</p>
+                        )}
+                      </div>
                   </div>
+
+                  {allDocuments.length > 0 && (
+                      <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
+                          <h3 className="font-bold text-white mb-3 flex justify-between items-center">
+                              <span>Documentos Recientes</span>
+                              <button onClick={() => setActiveTab('docs')} className="text-app-accent text-xs font-normal">Ver todos</button>
+                          </h3>
+                          <div className="grid grid-cols-1 gap-2">
+                              {allDocuments.slice(0, 2).map(doc => (
+                                  <button 
+                                    key={doc.id} 
+                                    onClick={() => doc.data && openDocument(doc.data)}
+                                    className="flex items-center gap-3 bg-app-bg/50 p-2 rounded-lg border border-app-accent/5 text-left"
+                                  >
+                                      <FileText size={16} className="text-app-accent" />
+                                      <span className="text-xs text-white truncate">{doc.name}</span>
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+                  )}
               </div>
           )}
 
@@ -331,7 +375,10 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                   </button>
 
                   <div className="space-y-2">
-                      {client.documents.map(doc => (
+                      {allDocuments.length === 0 && (
+                          <p className="text-center text-app-muted py-10">No hay documentos registrados.</p>
+                      )}
+                      {allDocuments.map(doc => (
                           <button 
                             key={doc.id} 
                             onClick={() => doc.data && openDocument(doc.data)}
@@ -341,7 +388,10 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                                   <FileText className="text-app-accent" size={20} />
                                   <div>
                                       <p className="text-white font-medium text-sm">{doc.name}</p>
-                                      <p className="text-[10px] text-app-muted">{new Date(doc.date).toLocaleDateString()}</p>
+                                      <p className="text-[10px] text-app-muted">
+                                          {new Date(doc.date).toLocaleDateString()} 
+                                          {doc.visitDate && ` (Visita)`}
+                                      </p>
                                   </div>
                               </div>
                               <span className="text-xs bg-app-bg px-2 py-1 rounded text-app-muted uppercase">{doc.type}</span>

@@ -30,6 +30,7 @@ export interface ClientDoc {
   type: 'pdf' | 'img' | 'doc' | 'audio';
   date: number;
   data?: string; // Base64 for audio or small preview
+  visitDate?: number; // Optional: to track which visit it belongs to
 }
 
 export interface Contact {
