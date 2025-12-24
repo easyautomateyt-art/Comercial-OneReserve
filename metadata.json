@@ -1,0 +1,8 @@
+{
+  "name": "OneReserve.Comercial",
+  "description": "Herramienta de gestión para fuerza de ventas. Registra visitas, feedback y localiza clientes cercanos con IA.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}
