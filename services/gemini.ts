@@ -1,7 +1,9 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { Place } from "../types";
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY || "");
+// @ts-ignore
+const apiKey = (typeof process !== 'undefined' && process.env.API_KEY) || "";
+const genAI = new GoogleGenerativeAI(apiKey);
 
 // Search for places nearby using Gemini Maps Grounding
 export const searchNearbyPlaces = async (
@@ -26,7 +28,7 @@ export const searchNearbyPlaces = async (
             },
           },
         },
-      ],
+      ] as any,
     });
 
     const text = result.response.text();
@@ -107,7 +109,7 @@ export const getCoordinatesForAddress = async (address: string): Promise<{lat: n
              tools: [{ 
                  // @ts-ignore
                  googleSearchRetrieval: {} 
-             }]
+             } as any]
         });
 
         const extractionModel = genAI.getGenerativeModel({
