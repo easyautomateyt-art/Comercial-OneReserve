@@ -175,18 +175,28 @@ app.post('/api/visits', async (req, res) => {
 });
 
 // Serve static files from the React app
-// Assuming the build output is in ../dist relative to this file (when compiled to dist/index.js, it's ../../dist)
-// But in Docker, we'll structure it so 'public' or 'dist' is adjacent.
-// Let's assume standard Vite build to 'dist' in root, and server in 'server'.
-// When running from root: node server/dist/index.js
-// The frontend build is in dist/
 const frontendPath = path.join(__dirname, '../../dist');
+console.log('Serving static files from:', frontendPath);
 app.use(express.static(frontendPath));
+
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Graceful Shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
 });
