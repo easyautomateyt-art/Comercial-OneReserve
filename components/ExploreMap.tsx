@@ -61,6 +61,8 @@ const ExploreMap: React.FC<ExploreMapProps> = ({ onCheckIn, onOpenClient, client
 
     // Add Client Markers (Cyan Folders)
     clients.forEach(client => {
+        if (!client.location || typeof client.location.lat !== 'number') return;
+        
         const icon = L.divIcon({
             className: 'client-marker',
             html: `
