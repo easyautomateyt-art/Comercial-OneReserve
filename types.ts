@@ -32,6 +32,14 @@ export interface ClientDoc {
   data?: string; // Base64 for audio or small preview
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -44,6 +52,7 @@ export interface Client {
   contactName?: string;
   phones: string[];
   emails: string[];
+  contacts?: Contact[];
   
   totalTimeSpentMinutes: number;
   expenses: Expense[];

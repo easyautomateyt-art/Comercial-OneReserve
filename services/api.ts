@@ -1,4 +1,4 @@
-import { User, Client, VisitReport } from '../types';
+import { User, Client, VisitReport, Contact } from '../types';
 
 const API_URL = '/api'; // Relative path since we serve from same origin
 
@@ -36,6 +36,16 @@ export const api = {
       body: JSON.stringify(client),
     });
     if (!res.ok) throw new Error('Failed to update client');
+    return res.json();
+  },
+
+  addContact: async (clientId: string, contact: Omit<Contact, 'id'>): Promise<Contact> => {
+    const res = await fetch(`${API_URL}/clients/${clientId}/contacts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contact),
+    });
+    if (!res.ok) throw new Error('Failed to add contact');
     return res.json();
   },
 

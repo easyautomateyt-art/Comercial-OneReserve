@@ -89,15 +89,22 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
 
   const removeExpense = (id: string) => setExpenses(expenses.filter(e => e.id !== id));
 
-  const addDocument = () => {
-      const docTypes = ['Contrato', 'Albarán', 'Foto Local', 'Tarjeta'];
-      const randomType = docTypes[Math.floor(Math.random() * docTypes.length)];
-      setDocuments([...documents, {
-          id: crypto.randomUUID(),
-          name: `${randomType} - ${new Date().toLocaleTimeString()}`,
-          type: 'img',
-          date: Date.now()
-      }]);
+  const addDocument = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setDocuments([...documents, {
+                  id: crypto.randomUUID(),
+                  name: file.name,
+                  type: file.type.includes('image') ? 'img' : 'doc',
+                  date: Date.now(),
+                  data: reader.result as string
+              }]);
+          };
+          reader.readAsDataURL(file);
+      }
+  };
   };
   const removeDocument = (id: string) => setDocuments(documents.filter(d => d.id !== id));
 
@@ -411,6 +418,33 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
                         </div>
                     ))}
                 </div>
+            )}
+        </div>
+
+        {/* === SECTION 5: DOCUMENTS === */}
+        <div className="bg-app-surface p-4 rounded-xl border border-app-accent/10 space-y-3">
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-app-muted uppercase tracking-wider flex items-center gap-2">
+                    <FileText size={14} /> Documentos
+                </label>
+                <label className="bg-app-accent/10 text-app-accent px-3 py-1 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1">
+                    <Upload size={14} /> Subir
+                    <input type="file" className="hidden" onChange={addDocument} />
+                </label>
+            </div>
+            
+            {documents.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                    {documents.map(doc => (
+                        <div key={doc.id} className="bg-app-bg p-2 rounded flex items-center gap-2 overflow-hidden">
+                            <FileText size={16} className="text-app-muted flex-shrink-0" />
+                            <span className="text-xs text-white truncate">{doc.name}</span>
+                            <button type="button" onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))} className="ml-auto text-red-400"><X size={14}/></button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-xs text-app-muted italic text-center py-2">Sin documentos adjuntos</p>
             )}
         </div>
 

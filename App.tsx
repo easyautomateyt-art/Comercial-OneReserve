@@ -163,6 +163,14 @@ const App: React.FC = () => {
       setCurrentView(AppView.NEW_VISIT);
   };
 
+  const handleViewVisitDetails = (visit: VisitReport) => {
+    const client = clients.find(c => c.id === visit.clientId);
+    if (client) {
+      setSelectedClient(client);
+      setCurrentView(AppView.CLIENT_FOLDER);
+    }
+  };
+
   if (isInitializing) {
     return (
         <div className="h-screen w-screen bg-app-bg flex items-center justify-center flex-col gap-4">
@@ -200,7 +208,7 @@ const App: React.FC = () => {
       {currentView === AppView.DASHBOARD && (
         <Dashboard 
             visits={visits} 
-            onViewDetails={(v) => console.log('View', v)} 
+            onViewDetails={handleViewVisitDetails} 
         />
       )}
       
@@ -322,12 +330,16 @@ const App: React.FC = () => {
             <h2 className="text-xl font-bold text-white mb-6">Historial Completo</h2>
             <div className="space-y-4">
                 {visits.map(v => (
-                     <div key={v.id} className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
+                     <div 
+                        key={v.id} 
+                        onClick={() => handleViewVisitDetails(v)}
+                        className="bg-app-surface p-4 rounded-xl border border-app-accent/10 cursor-pointer hover:bg-app-surface/80 transition-colors"
+                     >
                         <div className="flex justify-between">
                             <h3 className="font-bold text-white">{v.placeName}</h3>
                             <span className="text-xs text-app-muted">{new Date(v.timestamp).toLocaleDateString()}</span>
                         </div>
-                        <p className="text-app-text mt-2 text-sm">{v.feedback}</p>
+                        <p className="text-app-text mt-2 text-sm line-clamp-2">{v.feedback}</p>
                         <div className="mt-2 flex gap-2">
                             <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
                                 v.status === 'aceptado' ? 'bg-green-900/50 text-green-400' :

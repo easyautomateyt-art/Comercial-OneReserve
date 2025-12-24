@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './db';
-import { User, Client, Visit, Expense, Document } from './models';
+import { User, Client, Visit, Expense, Document, Contact } from './models';
 import path from 'path';
 
 const app = express();
@@ -81,13 +81,24 @@ app.get('/api/clients', async (req, res) => {
     const clients = await Client.findAll({
       include: [
         { model: Expense, as: 'expenses' },
-        { model: Document, as: 'documents' }
+        { model: Document, as: 'documents' },
+        { model: Contact, as: 'contacts' }
       ]
     });
     res.json(clients);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch clients' });
+  }
+});
+
+app.post('/api/clients/:id/contacts', async (req, res) => {
+  try {
+    const contact = await Contact.create({ ...req.body, clientId: req.params.id });
+    res.json(contact);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create contact' });
   }
 });
 

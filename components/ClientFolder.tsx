@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, DollarSign, FileText, Calendar, Plus, MapPin, PlayCircle, Phone, Mail, User, Mic } from 'lucide-react';
-import { Client, Expense, ClientDoc, VisitReport } from '../types';
+import { ArrowLeft, Clock, DollarSign, FileText, Calendar, Plus, MapPin, PlayCircle, Phone, Mail, User, Mic, MessageCircle } from 'lucide-react';
+import { Client, Expense, ClientDoc, VisitReport, Contact } from '../types';
+import { api } from '../services/api';
 
 interface ClientFolderProps {
   client: Client;
@@ -11,8 +12,10 @@ interface ClientFolderProps {
 }
 
 const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack, onUpdateClient, onNewVisit }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'docs' | 'expenses'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'docs' | 'expenses' | 'contacts'>('overview');
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContact, setNewContact] = useState({ name: '', role: '', phone: '', email: '' });
 
   const clientVisits = visits.filter(v => v.clientId === client.id).sort((a,b) => b.timestamp - a.timestamp);
 
@@ -29,6 +32,21 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
           ...client,
           documents: [newDoc, ...client.documents]
       });
+  };
+
+  const handleAddContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const addedContact = await api.addContact(client.id, newContact);
+      onUpdateClient({
+        ...client,
+        contacts: [...(client.contacts || []), addedContact]
+      });
+      setShowAddContact(false);
+      setNewContact({ name: '', role: '', phone: '', email: '' });
+    } catch (error) {
+      console.error("Failed to add contact", error);
+    }
   };
 
   return (
@@ -83,19 +101,100 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
 
       {/* Tabs - Sticky */}
       <div className="flex bg-app-surface border-b border-app-accent/10 sticky top-0 z-20 overflow-x-auto no-scrollbar">
-          {(['overview', 'history', 'docs', 'expenses'] as const).map(tab => (
+          {(['overview', 'history', 'docs', 'expenses', 'contacts'] as const).map(tab => (
               <button 
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 p-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-4 ${activeTab === tab ? 'border-app-accent text-app-accent' : 'border-transparent text-app-muted'}`}
             >
-                {tab === 'overview' ? 'Resumen' : tab === 'history' ? 'Historial' : tab === 'docs' ? 'Docs' : 'Gastos'}
+                {tab === 'overview' ? 'Resumen' : tab === 'history' ? 'Historial' : tab === 'docs' ? 'Docs' : tab === 'expenses' ? 'Gastos' : 'Contactos'}
             </button>
           ))}
       </div>
 
       {/* Content */}
       <div className="p-4 bg-app-bg pb-20">
+          
+          {activeTab === 'contacts' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-white font-bold">Personas de Contacto</h3>
+                <button onClick={() => setShowAddContact(!showAddContact)} className="text-app-accent text-sm flex items-center gap-1">
+                  <Plus size={16} /> Añadir
+                </button>
+              </div>
+
+              {showAddContact && (
+                <form onSubmit={handleAddContact} className="bg-app-surface p-4 rounded-xl border border-app-accent/20 mb-4 space-y-3">
+                  <input 
+                    placeholder="Nombre" 
+                    value={newContact.name}
+                    onChange={e => setNewContact({...newContact, name: e.target.value})}
+                    className="w-full bg-app-bg border border-app-accent/20 rounded p-2 text-white text-sm"
+                    required
+                  />
+                  <input 
+                    placeholder="Cargo / Rol" 
+                    value={newContact.role}
+                    onChange={e => setNewContact({...newContact, role: e.target.value})}
+                    className="w-full bg-app-bg border border-app-accent/20 rounded p-2 text-white text-sm"
+                    required
+                  />
+                  <input 
+                    placeholder="Teléfono" 
+                    value={newContact.phone}
+                    onChange={e => setNewContact({...newContact, phone: e.target.value})}
+                    className="w-full bg-app-bg border border-app-accent/20 rounded p-2 text-white text-sm"
+                  />
+                  <input 
+                    placeholder="Email" 
+                    value={newContact.email}
+                    onChange={e => setNewContact({...newContact, email: e.target.value})}
+                    className="w-full bg-app-bg border border-app-accent/20 rounded p-2 text-white text-sm"
+                  />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button type="button" onClick={() => setShowAddContact(false)} className="text-app-muted text-xs">Cancelar</button>
+                    <button type="submit" className="bg-app-accent text-app-bg px-3 py-1 rounded text-xs font-bold">Guardar</button>
+                  </div>
+                </form>
+              )}
+
+              {client.contacts?.map(contact => (
+                <div key={contact.id} className="bg-app-surface p-4 rounded-xl border border-app-accent/10">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-white font-bold">{contact.name}</h4>
+                      <p className="text-app-muted text-xs">{contact.role}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      {contact.phone && (
+                        <>
+                          <a href={`tel:${contact.phone}`} className="p-2 bg-app-bg rounded-full text-app-accent hover:bg-app-accent hover:text-app-bg transition-colors">
+                            <Phone size={16} />
+                          </a>
+                          <a href={`https://wa.me/${contact.phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="p-2 bg-app-bg rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-colors">
+                            <MessageCircle size={16} />
+                          </a>
+                        </>
+                      )}
+                      {contact.email && (
+                        <a href={`mailto:${contact.email}`} className="p-2 bg-app-bg rounded-full text-blue-400 hover:bg-blue-400 hover:text-black transition-colors">
+                          <Mail size={16} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {contact.phone && <p className="text-xs text-app-muted flex items-center gap-2"><Phone size={12}/> {contact.phone}</p>}
+                    {contact.email && <p className="text-xs text-app-muted flex items-center gap-2"><Mail size={12}/> {contact.email}</p>}
+                  </div>
+                </div>
+              ))}
+              {(!client.contacts || client.contacts.length === 0) && (
+                <p className="text-app-muted text-center text-sm py-4">No hay contactos registrados.</p>
+              )}
+            </div>
+          )}
           
           {activeTab === 'overview' && (
               <div className="space-y-4">

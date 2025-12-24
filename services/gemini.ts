@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { Place } from "../types";
 
 // @ts-ignore
-const apiKey = (typeof process !== 'undefined' && process.env.API_KEY) || "";
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' && process.env.API_KEY) || "";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Search for places nearby using Gemini Maps Grounding

@@ -332,7 +332,62 @@ Document.init({
   tableName: 'documents',
 });
 
+// --- Contact Model ---
+interface ContactAttributes {
+  id: string;
+  clientId: string;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+}
+
+interface ContactCreationAttributes extends Optional<ContactAttributes, 'id'> {}
+
+export class Contact extends Model<ContactAttributes, ContactCreationAttributes> implements ContactAttributes {
+  public id!: string;
+  public clientId!: string;
+  public name!: string;
+  public role!: string;
+  public phone!: string;
+  public email!: string;
+}
+
+Contact.init({
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  clientId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  }
+}, {
+  sequelize,
+  tableName: 'contacts',
+});
+
 // --- Associations ---
+Client.hasMany(Contact, { foreignKey: 'clientId', as: 'contacts' });
+Contact.belongsTo(Client, { foreignKey: 'clientId' });
+
 Client.hasMany(Visit, { foreignKey: 'clientId', as: 'visits' });
 Visit.belongsTo(Client, { foreignKey: 'clientId' });
 
