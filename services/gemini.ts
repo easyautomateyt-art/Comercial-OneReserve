@@ -112,7 +112,8 @@ export const getCoordinatesForAddress = async (address: string): Promise<{lat: n
     try {
         const model = genAI.getGenerativeModel({ model: MODEL_NAME });
         const result = await model.generateContent({
-             contents: [{ role: "user", parts: [{ text: `Find the exact geographic coordinates (latitude and longitude) for this specific address: "${address}".` }] }],
+             contents: [{ role: "user", parts: [{ text: `Find the exact geographic coordinates (latitude and longitude) for this specific address: "${address}". 
+             Use Google Search to find the most accurate location possible for this street address.` }] }],
              tools: [{ 
                  // @ts-ignore
                  google_search: {} 
@@ -135,6 +136,7 @@ export const getCoordinatesForAddress = async (address: string): Promise<{lat: n
         });
 
         const extractionResult = await extractionModel.generateContent(`Extract the latitude and longitude from this text. Return a JSON object with "lat" and "lng" keys.
+            Ensure the coordinates are as precise as possible for the specific street number.
             
             Text: ${result.response.text()}`);
 
