@@ -89,6 +89,12 @@ const ClientFolder: React.FC<ClientFolderProps> = ({ client, visits = [], onBack
                 <h1 className="text-2xl font-bold text-white">{client.name}</h1>
                 <p className="text-app-muted flex items-center gap-1 mt-1 text-sm">
                     <MapPin size={14} /> {client.address}
+                    <button 
+                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${client.location.lat},${client.location.lng}`, '_blank')}
+                        className="ml-2 text-app-accent hover:underline text-xs font-bold uppercase"
+                    >
+                        Ver en Maps
+                    </button>
                 </p>
             </div>
             <div className="w-12 h-12 bg-app-accent text-app-bg rounded-full flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(0,232,229,0.3)]">
