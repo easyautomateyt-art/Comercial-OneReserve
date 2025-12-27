@@ -172,10 +172,16 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
     // Determine Location
     let finalLocation = existingClient?.location || initialPlace?.location;
     
-    if (!finalLocation) {
-        setSubmitStatus('Localizando dirección...');
+    // If address changed from what we had, or we don't have a location, geocode it
+    const originalAddress = existingClient?.address || initialPlace?.address || '';
+    if (address !== originalAddress || !finalLocation) {
+        setSubmitStatus('Geolocalizando dirección...');
         const coords = await getCoordinatesForAddress(address);
-        finalLocation = coords || userLocation || { lat: 0, lng: 0 };
+        if (coords) {
+            finalLocation = coords;
+        } else if (!finalLocation) {
+            finalLocation = userLocation || { lat: 0, lng: 0 };
+        }
     }
 
     const report: VisitReport = {
@@ -197,6 +203,9 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
 
     // Prepare Updated Client Data
     const updatedClientData: Partial<Client> = {
+        name: placeName,
+        address: address,
+        location: finalLocation,
         contactName,
         phones,
         emails
@@ -223,15 +232,14 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
         {/* === SECTION 1: BASIC INFO === */}
         <div className="space-y-4">
             <div className="space-y-2">
-                <label className="text-xs font-bold text-app-accent uppercase tracking-wider">Nombre Local {isLocked ? '' : '*'}</label>
+                <label className="text-xs font-bold text-app-accent uppercase tracking-wider">Nombre Local *</label>
                 <div className="relative">
                     <input
                     type="text"
                     value={placeName}
-                    onChange={(e) => !isLocked && setPlaceName(e.target.value)}
+                    onChange={(e) => setPlaceName(e.target.value)}
                     placeholder="Ej: Restaurante El Puerto"
-                    disabled={isLocked}
-                    className={`w-full bg-app-surface border border-app-accent/30 rounded-lg p-3 pl-10 text-white outline-none ${isLocked ? 'opacity-70' : 'focus:border-app-accent'}`}
+                    className="w-full bg-app-surface border border-app-accent/30 rounded-lg p-3 pl-10 text-white outline-none focus:border-app-accent"
                     required
                     />
                     <MapPin size={18} className="absolute left-3 top-3.5 text-app-accent" />
@@ -239,31 +247,26 @@ const VisitForm: React.FC<VisitFormProps> = ({ initialPlace, existingClient, onS
             </div>
 
             <div className="space-y-2 relative">
-                <label className="text-xs font-bold text-app-accent uppercase tracking-wider">Dirección {isLocked ? '' : '*'}</label>
+                <label className="text-xs font-bold text-app-accent uppercase tracking-wider">Dirección *</label>
                 <div className="flex gap-2">
                     <div className="relative flex-1">
                         <input
                             type="text"
                             value={address}
                             onChange={(e) => {
-                                if (!isLocked) {
-                                    setAddress(e.target.value);
-                                    if(showSuggestions) setShowSuggestions(false);
-                                }
+                                setAddress(e.target.value);
+                                if(showSuggestions) setShowSuggestions(false);
                             }}
-                            disabled={isLocked}
-                            className={`w-full bg-app-surface border border-app-accent/30 rounded-lg p-3 text-white outline-none ${isLocked ? 'opacity-70' : 'focus:border-app-accent'}`}
+                            className="w-full bg-app-surface border border-app-accent/30 rounded-lg p-3 text-white outline-none focus:border-app-accent"
                             required
                         />
                     </div>
-                    {!isLocked && (
-                        <button 
-                            type="button" onClick={handleAddressSearch}
-                            className="bg-app-accent/10 text-app-accent border border-app-accent/30 rounded-lg px-3 hover:bg-app-accent hover:text-app-bg transition-colors"
-                        >
-                            {loadingSuggestions ? <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" /> : <Search size={20} />}
-                        </button>
-                    )}
+                    <button 
+                        type="button" onClick={handleAddressSearch}
+                        className="bg-app-accent/10 text-app-accent border border-app-accent/30 rounded-lg px-3 hover:bg-app-accent hover:text-app-bg transition-colors"
+                    >
+                        {loadingSuggestions ? <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" /> : <Search size={20} />}
+                    </button>
                 </div>
                 {/* Suggestions Dropdown */}
                 {showSuggestions && suggestions.length > 0 && (

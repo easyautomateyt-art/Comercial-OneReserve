@@ -114,8 +114,9 @@ const App: React.FC = () => {
           const updatedClient: Client = {
               ...client,
               ...updatedClientData,
-              phones: [...(client.phones || []), ...(updatedClientData?.phones || [])].filter((v,i,a) => a.indexOf(v)===i),
-              emails: [...(client.emails || []), ...(updatedClientData?.emails || [])].filter((v,i,a) => a.indexOf(v)===i),
+              // Use the lists from the form as they are the full updated state
+              phones: updatedClientData?.phones !== undefined ? updatedClientData.phones : client.phones,
+              emails: updatedClientData?.emails !== undefined ? updatedClientData.emails : client.emails,
               contacts: [...(client.contacts || []), ...newContactsFromVisit],
               visitIds: [...client.visitIds, report.id],
               totalTimeSpentMinutes: client.totalTimeSpentMinutes + report.durationMinutes,

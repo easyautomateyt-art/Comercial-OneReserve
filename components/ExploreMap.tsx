@@ -121,7 +121,7 @@ const ExploreMap: React.FC<ExploreMapProps> = ({ onCheckIn, onOpenClient, client
         btnMaps.className = 'flex-1 bg-gray-200 text-gray-800 px-2 py-2 rounded-lg text-xs font-bold uppercase shadow hover:bg-gray-300 transition-colors flex items-center justify-center gap-1';
         btnMaps.innerHTML = `Maps`;
         btnMaps.onclick = () => {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${client.location.lat},${client.location.lng}`, '_blank');
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address)}`, '_blank');
         };
 
         btnContainer.appendChild(btnOpen);
